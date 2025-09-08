@@ -49,12 +49,12 @@ INSTALLATION:
 function Install-SpeedTest {
     try {
         Write-Host "Installing SpeedTest CLI..." -ForegroundColor Yellow
-        
+
         # Create user bin directory
         if (-not (Test-Path $Script:UserBinDir)) {
             New-Item -ItemType Directory -Path $Script:UserBinDir -Force | Out-Null
         }
-        
+
         # Copy script to user bin
         $currentScript = $PSCommandPath
         if (-not $currentScript) {
@@ -64,7 +64,7 @@ function Install-SpeedTest {
         } else {
             Copy-Item $currentScript $Script:ScriptPath -Force
         }
-        
+
         # Add to PATH if not already there
         $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
         if ($userPath -notlike "*$Script:UserBinDir*") {
@@ -72,7 +72,7 @@ function Install-SpeedTest {
             [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
             Write-Host "Added to PATH: $Script:UserBinDir" -ForegroundColor Green
         }
-        
+
         # Create batch wrapper for easier execution
         $batchWrapper = @"
 @echo off
@@ -80,11 +80,11 @@ powershell.exe -ExecutionPolicy Bypass -File "$Script:ScriptPath" %*
 "@
         $batchPath = "$Script:UserBinDir\$Script:ScriptName.bat"
         $batchWrapper | Out-File -FilePath $batchPath -Encoding ASCII
-        
+
         Write-Host "SpeedTest CLI installed successfully!" -ForegroundColor Green
         Write-Host "You can now use 'speedtest' command from anywhere." -ForegroundColor Green
         Write-Host "Note: You may need to restart your terminal for PATH changes to take effect." -ForegroundColor Yellow
-        
+
     } catch {
         Write-Error "Installation failed: $($_.Exception.Message)"
     }
@@ -93,7 +93,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$Script:ScriptPath" %*
 function Uninstall-SpeedTest {
     try {
         Write-Host "Uninstalling SpeedTest CLI..." -ForegroundColor Yellow
-        
+
         # Remove script files
         if (Test-Path $Script:ScriptPath) {
             Remove-Item $Script:ScriptPath -Force
@@ -101,9 +101,9 @@ function Uninstall-SpeedTest {
         if (Test-Path "$Script:UserBinDir\$Script:ScriptName.bat") {
             Remove-Item "$Script:UserBinDir\$Script:ScriptName.bat" -Force
         }
-        
+
         Write-Host "SpeedTest CLI uninstalled successfully!" -ForegroundColor Green
-        
+
     } catch {
         Write-Error "Uninstallation failed: $($_.Exception.Message)"
     }
@@ -111,7 +111,7 @@ function Uninstall-SpeedTest {
 
 function Test-InternetConnection {
     try {
-        $ping = Test-Connection -ComputerName "8.8.8.8" -Count 1 -Quiet
+        $ping = ping -c 1 8.8.8.8
         return $ping
     } catch {
         return $false
@@ -153,68 +153,68 @@ function Get-LocationInfo {
 
 function Measure-DownloadSpeed {
     param([string]$Url, [int]$DurationSeconds)
-    
+
     $testUrls = @(
         "https://proof.ovh.net/files/100Mb.dat",
         "https://speed.cloudflare.com/__down?bytes=100000000",
         "https://www.googleapis.com/download/storage/v1/b/gcp-public-data-landsat/o/LC08%2F01%2F044%2F034%2F%2FLC08_L1GT_044034_20130330_20170310_01_T2%2FLC08_L1GT_044034_20130330_20170310_01_T2_MTL.txt?alt=media"
     )
-    
+
     if ($Url) {
         $testUrls = @($Url)
     }
-    
+
     $bestSpeed = 0
     $bestUrl = ""
-    
+
     foreach ($testUrl in $testUrls) {
         try {
             if ($Verbose) {
                 Write-Host "Testing download from: $testUrl" -ForegroundColor Cyan
             }
-            
+
             $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
             $webClient = New-Object System.Net.WebClient
             $webClient.Headers.Add("User-Agent", "SpeedTest-CLI/1.0")
-            
+
             $totalBytes = 0
             $buffer = New-Object byte[] 8192
-            
+
             try {
                 $stream = $webClient.OpenRead($testUrl)
                 $endTime = $stopwatch.ElapsedMilliseconds + ($DurationSeconds * 1000)
-                
+
                 while ($stopwatch.ElapsedMilliseconds -lt $endTime) {
                     $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
                     if ($bytesRead -eq 0) { break }
                     $totalBytes += $bytesRead
                 }
-                
+
                 $stream.Close()
             } finally {
                 $webClient.Dispose()
             }
-            
+
             $stopwatch.Stop()
             $seconds = $stopwatch.ElapsedMilliseconds / 1000
             $speed = ($totalBytes * 8) / $seconds / 1000000  # Mbps
-            
+
             if ($speed -gt $bestSpeed) {
                 $bestSpeed = $speed
                 $bestUrl = $testUrl
             }
-            
+
             if ($Verbose) {
-                Write-Host "Speed: $([math]::Round($speed, 2)) Mbps" -ForegroundColor Green
+                Write-Host "Speed: $('{0:F2}' -f $speed) Mbps" -ForegroundColor Green
             }
-            
+
         } catch {
             if ($Verbose) {
                 Write-Host "Failed to test $testUrl`: $($_.Exception.Message)" -ForegroundColor Red
             }
         }
     }
-    
+
     return @{
         Speed = $bestSpeed
         Url = $bestUrl
@@ -223,88 +223,88 @@ function Measure-DownloadSpeed {
 
 function Measure-UploadSpeed {
     param([int]$DurationSeconds)
-    
-    $uploadUrls = @(
-        "https://httpbin.org/post",
-        "https://httpbin.org/put"
-    )
-    
-    $bestSpeed = 0
-    
-    foreach ($url in $uploadUrls) {
-        try {
-            if ($Verbose) {
-                Write-Host "Testing upload to: $url" -ForegroundColor Cyan
-            }
-            
-            # Generate random data
-            $data = [byte[]](1..8192 | ForEach-Object { Get-Random -Maximum 256 })
-            
-            $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-            $totalBytes = 0
-            $endTime = $stopwatch.ElapsedMilliseconds + ($DurationSeconds * 1000)
-            
-            while ($stopwatch.ElapsedMilliseconds -lt $endTime) {
-                try {
-                    $response = Invoke-RestMethod -Uri $url -Method Post -Body $data -ContentType "application/octet-stream" -TimeoutSec 2
-                    $totalBytes += $data.Length
-                } catch {
-                    break
+
+    $uploadUrl = "https://speed.cloudflare.com/__up"
+
+    try {
+        if ($Verbose) {
+            Write-Host "Testing upload to: $uploadUrl" -ForegroundColor Cyan
+        }
+
+        # Generate random data
+        $data = [byte[]](1..1MB | ForEach-Object { Get-Random -Maximum 256 })
+
+        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+        $totalBytes = 0
+        $endTime = $stopwatch.ElapsedMilliseconds + ($DurationSeconds * 1000)
+
+        while ($stopwatch.ElapsedMilliseconds -lt $endTime) {
+            try {
+                Invoke-RestMethod -Uri $uploadUrl -Method Post -Body $data -ContentType "application/octet-stream" -TimeoutSec ($DurationSeconds + 5)
+                $totalBytes += $data.Length
+            } catch {
+                if ($Verbose) {
+                    Write-Host "Error during upload test: $($_.Exception.Message)" -ForegroundColor Red
                 }
-            }
-            
-            $stopwatch.Stop()
-            $seconds = $stopwatch.ElapsedMilliseconds / 1000
-            $speed = ($totalBytes * 8) / $seconds / 1000000  # Mbps
-            
-            if ($speed -gt $bestSpeed) {
-                $bestSpeed = $speed
-            }
-            
-            if ($Verbose) {
-                Write-Host "Upload Speed: $([math]::Round($speed, 2)) Mbps" -ForegroundColor Green
-            }
-            
-        } catch {
-            if ($Verbose) {
-                Write-Host "Failed to test upload to $url`: $($_.Exception.Message)" -ForegroundColor Red
+                break
             }
         }
+
+        $stopwatch.Stop()
+        $seconds = $stopwatch.ElapsedMilliseconds / 1000
+        # If the test ran for less than a second, the speed can be infinite.
+        if ($seconds -eq 0) {
+            $seconds = 1
+        }
+        [double]$speed = ($totalBytes * 8) / $seconds / 1000000  # Mbps
+
+        if ($Verbose) {
+            Write-Host "Upload Speed: $('{0:F2}' -f $speed) Mbps" -ForegroundColor Green
+        }
+
+        return $speed
+
+    } catch {
+        if ($Verbose) {
+            Write-Host "Failed to test upload to $uploadUrl`: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        return 0
     }
-    
-    return $bestSpeed
 }
 
 function Measure-Ping {
     try {
-        $ping = Test-Connection -ComputerName "8.8.8.8" -Count 4
-        $avgPing = ($ping | Measure-Object ResponseTime -Average).Average
-        return [math]::Round($avgPing, 2)
+        $pingResult = ping -c 4 8.8.8.8
+        $avgPing = $pingResult[-1].split("=")[1].split("/")[1]
+        return [math]::Round([double]$avgPing)
     } catch {
+        if ($Verbose) {
+            Write-Host "Failed to measure ping: $($_.Exception.Message)" -ForegroundColor Red
+        }
         return 0
     }
 }
 
 function Show-Results {
     param($Results)
-    
+
     if ($Simple) {
-        Write-Host "Download: $([math]::Round($Results.Download, 2)) Mbps | Upload: $([math]::Round($Results.Upload, 2)) Mbps | Ping: $($Results.Ping) ms"
+        Write-Host ("Download: {0:F2} Mbps | Upload: {1:F2} Mbps | Ping: {2} ms" -f $Results.Download, $Results.Upload, $Results.Ping)
         return
     }
-    
+
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════╗" -ForegroundColor Blue
     Write-Host "║            SPEED TEST RESULTS            ║" -ForegroundColor Blue
     Write-Host "╠══════════════════════════════════════════╣" -ForegroundColor Blue
     Write-Host "║                                          ║" -ForegroundColor Blue
-    Write-Host "║  Public IP:    $($Results.IP.PadRight(26)) ║" -ForegroundColor White
-    Write-Host "║  ISP:          $($Results.ISP.PadRight(26)) ║" -ForegroundColor White
-    Write-Host "║  Location:     $($Results.Location.PadRight(26)) ║" -ForegroundColor White
+    Write-Host ("║  Public IP:    {0,-26} ║" -f $Results.IP) -ForegroundColor White
+    Write-Host ("║  ISP:          {0,-26} ║" -f $Results.ISP) -ForegroundColor White
+    Write-Host ("║  Location:     {0,-26} ║" -f $Results.Location) -ForegroundColor White
     Write-Host "║                                          ║" -ForegroundColor Blue
-    Write-Host "║  Download:     $([math]::Round($Results.Download, 2).ToString().PadLeft(8)) Mbps        ║" -ForegroundColor Green
-    Write-Host "║  Upload:       $([math]::Round($Results.Upload, 2).ToString().PadLeft(8)) Mbps        ║" -ForegroundColor Yellow
-    Write-Host "║  Ping:         $($Results.Ping.ToString().PadLeft(8)) ms          ║" -ForegroundColor Cyan
+    Write-Host ("║  Download:     {0,8:F2} Mbps        ║" -f $Results.Download) -ForegroundColor Green
+    Write-Host ("║  Upload:       {0,8:F2} Mbps        ║" -f $Results.Upload) -ForegroundColor Yellow
+    Write-Host ("║  Ping:         {0,8} ms          ║" -f $Results.Ping) -ForegroundColor Cyan
     Write-Host "║                                          ║" -ForegroundColor Blue
     Write-Host "╚══════════════════════════════════════════╝" -ForegroundColor Blue
     Write-Host ""
