@@ -1,5 +1,5 @@
 {
-  "name": "worker-name",
+  "name": "internet-speed-test-cli",
   "compatibility_date": "2025-09-08",
   "assets": {
     "directory": "./dist"
