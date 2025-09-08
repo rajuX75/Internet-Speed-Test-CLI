@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedTest CLI - Internet Speed Test Tool</title>
+    <meta name="description" content="Lightweight PowerShell internet speed test tool with one-command installation">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SpeedTest CLI - Internet Speed Test Tool">
+    <meta property="og:description" content="Fast, accurate internet speed testing from your command line">
+    <meta property="og:image" content="/og-image.png">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .install-box {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: #555;
+        }
+        
+        .copy-btn.copied {
+            background: #00aa00;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .feature p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .example-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-line;
+            text-align: left;
+        }
+        
+        .buttons {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            .hero { padding: 2rem 1rem; }
+            h1 { font-size: 2rem; }
+            .install-box { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="logo">⚡</div>
+            <h1>SpeedTest CLI</h1>
+            <p class="subtitle">Fast, accurate internet speed testing from your command line</p>
+            
+            <div class="install-box">
+                <button class="copy-btn" onclick="copyInstallCommand()">Copy</button>
+                <code id="install-command">irm https://speedtest.pages.dev | iex</code>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🚀</div>
+                    <h3>One-Line Install</h3>
+                    <p>Install globally with a single PowerShell command</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Accurate Results</h3>
+                    <p>Download, upload speeds and ping testing</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Global Servers</h3>
+                    <p>Multiple test servers worldwide for reliability</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Privacy First</h3>
+                    <p>No data collection or account required</p>
+                </div>
+            </div>
+            
+            <h3>Example Output:</h3>
+            <div class="example-output">╔══════════════════════════════════════════╗
+║            SPEED TEST RESULTS            ║
+╠══════════════════════════════════════════╣
+║                                          ║
+║  Public IP:    203.0.113.42              ║
+║  ISP:          Example Internet Provider ║
+║  Location:     New York, United States   ║
+║                                          ║
+║  Download:       85.43 Mbps              ║
+║  Upload:         12.67 Mbps              ║
+║  Ping:           23.45 ms                ║
+║                                          ║
+║  Test completed in 10.2 seconds          ║
+║                                          ║
+╚══════════════════════════════════════════╝</div>
+            
+            <div class="buttons">
+                <a href="/speedtest.ps1" class="btn btn-primary" download>Download Script</a>
+                <a href="https://github.com/yourusername/speedtest-cli" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyInstallCommand() {
+            const command = document.getElementById('install-command').textContent;
+            navigator.clipboard.writeText(command).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        // Add some interactive animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const hero = document.querySelector('.hero');
+            hero.style.opacity = '0';
+            hero.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                hero.style.transition = 'all 0.6s ease';
+                hero.style.opacity = '1';
+                hero.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

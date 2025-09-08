@@ -1,0 +1,19 @@
+# Main installation endpoint - serves the PowerShell script
+/                /speedtest.ps1    200    text/plain
+/install         /speedtest.ps1    200    text/plain
+/get             /speedtest.ps1    200    text/plain
+
+# Alternative endpoints
+/speedtest       /speedtest.ps1    200    text/plain
+/ps1             /speedtest.ps1    200    text/plain
+
+# Landing page (when accessed from browser)
+/home            /public/index.html    200
+/about           /public/index.html    200
+
+# Set proper content types
+/speedtest.ps1   /public/speedtest.ps1    200    text/plain
+/install.ps1     /public/install.ps1     200    text/plain
+
+# Fallback for browsers (show landing page for unknown routes)
+/*               /public/index.html       200
